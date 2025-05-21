@@ -6,17 +6,16 @@ author=John Millsap
 description=Enables all dock widgets to be shown or hidden with the click of a button
 about=Displays a named button for each dock widget, allowing the user to show or hide each in turn
 version=0.1
-repository=repo
+repository=https://github.com/millsapjohn/qgis_flyoutdocks
 
-category=RasterVectorDatabaseMeshWeb
 changelog=changelog
 experimental=True
 deprecated=False
-tags=tag,tag1
-homepage=homepage
-tracker=tracker
+tags=UI,interface,customization
+homepage=https://github.com/millsapjohn/qgis_flyoutdocks
+tracker=https://github.com/millsapjohn/qgis_flyoutdocks/issues
 qgisMaximumVersion=3.99
-icon=icon
+icon=':/images/themes/default/console/iconHideToolConsole.svg'
 server=False
 hasProcessingProvider=False
 
