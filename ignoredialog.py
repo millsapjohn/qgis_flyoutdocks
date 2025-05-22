@@ -4,7 +4,7 @@ from qgis.PyQt.QtWidgets import (
     QHBoxLayout,
     QPushButton,
     QLabel,
-    QCheckbox,
+    QCheckBox,
     QTableWidget,
     QTableWidgetItem,
     QAbstractItemView,

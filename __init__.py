@@ -1,4 +1,4 @@
 from .flyoutdocks import FlyoutDocksPlugin
 
-def ClassFactory(iface):
+def classFactory(iface):
     return FlyoutDocksPlugin(iface)

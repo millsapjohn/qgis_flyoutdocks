@@ -17,6 +17,8 @@ class CustomPanel(QDockWidget):
         self.layout = QVBoxLayout()
         for panel in panels:
             self.addPanel(panel)
+        self.widget.setLayout(self.layout)
+        self.setWidget(self.widget)
 
     def panelState(self, panel):
         if panel.isVisible():
@@ -26,7 +28,7 @@ class CustomPanel(QDockWidget):
 
     def addPanel(self, panel):
         button = QPushButton(panel.windowTitle())
-        button.clicked.connect(self.panelState(panel))
+        button.clicked.connect(lambda: self.panelState(panel))
         self.layout.addWidget(button)
 
     def removePanel(self, panel):
