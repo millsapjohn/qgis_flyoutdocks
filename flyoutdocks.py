@@ -1,25 +1,39 @@
 from qgis.core import QgsApplication, QgsSettings
-from qgis.PyQt.QtWidgets import QDockWidget, QMainWindow
+from qgis.PyQt.QtWidgets import QDockWidget, QMainWindow, QAction
 from qgis.PyQt.QtCore import Qt, QObject, QEvent, pyqtSignal
+from qgis.PyQt.QtGui import QIcon
 from qgis.utils import iface
 import os
 from .flyoutpanels import CustomPanel
+from .ignoredialog import IgnoreDialog
+
+plugin_icon = QIcon(':/images/themes/default/console/iconHideToolConsole.svg')
 
 class FlyoutDocksPlugin:
     def __init__(self, iface):
+        super().__init__()
         self.iface = iface
         self.settings = QgsSettings()
         self.instance = QgsApplication.instance()
         self.initGui()
         
     def initGui(self):
+        self.showHideAction = QAction(plugin_icon, 'Show/Hide Dock Widgets')
+        self.iface.addPluginToMenu('Manage Dock Widgets', self.showHideAction)
+        self.showHideAction.triggered.connect(self.setShowHide)
         self.mw = self.iface.mainWindow()
         self.dock_monitor = DockMonitor(self.mw)
         self.mw.installEventFilter(self.dock_add_monitor)
         self.dock_monitor.dockWidgetAdded.connect(self.processNewDock)
-        self.dock_monitor.dockWidgetMoved.connect(self.processDockMovement)
-        self.dock_monitor.dockWidgetFloatChanged.connect(self.processLevelChange)
+        self.dock_monitor.dockWidgetMoved.connect(self.processMoveDock)
+        self.dock_monitor.dockWidgetFloatChanged.connect(self.processFloatDock)
         self.docks = self.mw.findChildren(QDockWidget)
+        if not self.hide_docks:
+            self.hide_docks = []
+        if not self.show_docks:
+            self.show_docks = self.docks
+        for dock in self.docks:
+            dock.isHidden(True)
         self.left_docks = []
         self.right_docks = []
         self.upper_docks = []
@@ -29,6 +43,8 @@ class FlyoutDocksPlugin:
         self.loadDocks()
         
     def unload(self):
+        self.iface.removePluginMenu('Manage Dock Widgets', self.showHideAction)
+        del self.showHideAction
         if self.left_dock:
             self.iface.removeDockWidget(self.left_dock)
             del self.left_dock
@@ -45,16 +61,20 @@ class FlyoutDocksPlugin:
             self.mw.removeEventFilter(self.dock_monitor)
 
     def processDock(self, dock):
-        if self.mw.dockWidgetArea(dock) == 1:
-            self.left_docks.append(dock)
-        elif self.mw.dockWidgetArea(dock) == 2:
-            self.right_docks.append(dock)
-        elif self.mw.dockWidgetArea(dock) == 4:
-            self.upper_docks.append(dock)
-        elif self.mw.dockWidgetArea(dock) == 8:
-            self.lower_docks.append(dock)
-        else:
+        if dock in self.hide_docks:
             pass
+        else:
+            match self.mw.dockWidgetArea(dock):
+                case 1:
+                    self.left_docks.append(dock)
+                case 2:
+                    self.right_docks.append(dock)
+                case 4:
+                    self.upper_docks.append(dock)
+                case 8:
+                    self.lower_docks.append(dock)
+                case _:
+                    pass
 
     def loadDocks(self):
         if self.left_dock:
@@ -87,7 +107,51 @@ class FlyoutDocksPlugin:
             self.iface.addDockWidget(Qt.BottomDockWidgetArea, self.lower_dock)
 
     def processNewDock(self, dock):
+        self.docks.append(dock)
         self.processDock(dock)
+        self.loadDocks()
+
+    def processMoveDock(self, dock):
+        if dock in self.left_docks:
+            self.left_docks.remove(dock)
+        elif dock in self.right_docks:
+            self.right_docks.remove(dock)
+        elif dock in self.upper_docks:
+            self.upper_docks.remove(dock)
+        elif dock in self.lower_docks:
+            self.lower_docks.remove(dock)
+        else:
+            pass
+        self.processDock(dock)
+        self.loadDocks()
+
+    def processFloatDock(self, dock, level):
+        if dock in self.left_docks:
+            self.left_docks.remove(dock)
+        elif dock in self.right_docks:
+            self.right_docks.remove(dock)
+        elif dock in self.upper_docks:
+            self.upper_docks.remove(dock)
+        elif dock in self.lower_docks:
+            self.lower_docks.remove(dock)
+        else:
+            pass
+        # TODO: check this
+        if level == 0:
+            pass
+        else:
+            self.processDock(dock)
+            self.loadDocks()
+
+    def setShowHide(self):
+        dialog = IgnoreDialog(self.show_docks, self.hide_docks)
+        dialog.exec()
+        if dialog.success == True:
+            self.show_docks = dialog.show_panels
+            self.hide_docks = dialog.hide_panels
+            for dock in self.docks:
+                self.processDock(dock)
+            self.loadDocks()
 
 
 class DockAddMonitor(QObject):
