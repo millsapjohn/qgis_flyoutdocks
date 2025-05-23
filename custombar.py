@@ -1,24 +1,19 @@
 from qgis.PyQt.QtWidgets import (
-    QWidget,
-    QDockWidget,
+    QToolBar,
     QPushButton,
-    QHBoxLayout,
-    QVBoxLayout,
 )
 from qgis.utils import iface
 from qgis.core import QgsApplication
 
-class CustomPanel(QDockWidget):
+class CustomBar(QToolBar):
     def __init__(self, iface, panels, title):
         super().__init__()
         self.setObjectName(title)
+        self.setWindowTitle(title)
         self.iface = iface
-        self.widget = QWidget()
-        self.layout = QVBoxLayout()
+        self.mw = iface.mainWindow()
         for panel in panels:
             self.addPanel(panel)
-        self.widget.setLayout(self.layout)
-        self.setWidget(self.widget)
 
     def panelState(self, panel):
         if panel.isVisible():
@@ -28,6 +23,7 @@ class CustomPanel(QDockWidget):
 
     def addPanel(self, panel):
         button = QPushButton(panel.windowTitle())
+        # TODO: set button orientation to vertical
         button.clicked.connect(lambda: self.panelState(panel))
         self.layout.addWidget(button)
 

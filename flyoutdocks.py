@@ -4,10 +4,13 @@ from qgis.PyQt.QtCore import Qt, QObject, QEvent, pyqtSignal
 from qgis.PyQt.QtGui import QIcon
 from qgis.utils import iface
 import os
-from .flyoutpanels import CustomPanel
+from .custombar import CustomBar
 from .ignoredialog import IgnoreDialog
 
 plugin_icon = QIcon(':/images/themes/default/console/iconHideToolConsole.svg')
+
+# TODO: set a variable to prevent reloading panels at startup
+
 
 class FlyoutDocksPlugin:
     def __init__(self, iface):
@@ -16,10 +19,7 @@ class FlyoutDocksPlugin:
         self.instance = QgsApplication.instance()
         self.hide_docks = None
         self.show_docks = None
-        self.left_dock = None
-        self.right_dock = None
-        self.upper_dock = None
-        self.lower_dock = None
+        self.dock_bars = None
         self.initGui()
         
     def initGui(self):
@@ -31,8 +31,9 @@ class FlyoutDocksPlugin:
         self.mw.installEventFilter(self.dock_monitor)
         self.dock_monitor.dockWidgetAdded.connect(self.processNewDock)
         self.dock_monitor.dockWidgetMoved.connect(self.processMoveDock)
-        self.dock_monitor.dockWidgetFloatChanged.connect(self.processFloatDock)
         self.docks = self.mw.findChildren(QDockWidget)
+        if not self.dock_bars:
+            self.dock_bars = []
         if not self.hide_docks:
             self.hide_docks = []
         if not self.show_docks:
@@ -82,47 +83,37 @@ class FlyoutDocksPlugin:
                     pass
 
     def loadDocks(self):
-        if self.left_dock:
-            self.mw.removeDockWidget(self.left_dock)
-            del self.left_dock
-        if self.right_dock:
-            self.mw.removeDockWidget(self.right_dock)
-            del self.right_dock
-        if self.upper_dock:
-            self.mw.removeDockWidget(self.upper_dock)
-            del self.upper_dock
-        if self.lower_dock:
-            self.mw.removeDockWidget(self.lower_dock)
-            del self.lower_dock
-        if self.left_docks != []:
-            self.left_dock = CustomPanel(self.iface, self.left_docks, 'Left Dock')
-        if self.left_dock:
-            self.iface.addDockWidget(Qt.LeftDockWidgetArea, self.left_dock)
-        if self.right_docks != []:
-            self.right_dock = CustomPanel(self.iface, self.right_docks, 'Right Dock')
-        if self.right_dock:
-            self.iface.addDockWidget(Qt.RightDockWidgetArea, self.left_dock)
-        if self.upper_docks != []:
-            self.upper_dock = CustomPanel(self.iface, self.upper_docks, 'Upper Dock')
-        if self.upper_dock:
-            self.iface.addDockWidget(Qt.TopDockWidgetArea, self.upper_dock)
-        if self.lower_docks != []:
-            self.lower_dock = CustomPanel(self.iface, self.lower_docks, 'Lower Dock')
-        if self.lower_dock:
-            self.iface.addDockWidget(Qt.BottomDockWidgetArea, self.lower_dock)
+        if self.dock_bars == []:
+            continue
+        else:
+            for bar in self.dock_bars:
+                self.mw.removeToolBar(bar)
+                del bar
+        self.left_bar = CustomBar(self.iface, self.left_docks, 'Left Bar')
+        self.mw.addToolbar(Qt.LeftToolBarArea, self.left_bar)
+        self.dock_bars.append(self.left_bar)
+        self.right_bar = CustomBar(self.iface, self.right_docks, 'Right Bar')
+        self.mw.addToolBar(Qt.RightToolBarArea, self.left_bar)
+        self.dock_bars.append(self.right_bar)
+        self.upper_bar = CustomBar(self.iface, self.upper_docks, 'Upper Bar')
+        self.mw.addToolBar(Qt.TopToolBarArea, self.upper_bar)
+        self.dock_bars.append(self.upper_bar)
+        self.lower_bar = CustomBar(self.iface, self.lower_docks, 'Lower Bar')
+        self.mw.addToolBar(Qt.BottomToolBarArea, self.lower_bar)
+        self.dock_bars.append(self.lower_bar)
 
     def processNewDock(self, dock):
         self.docks.append(dock)
         self.processDock(dock)
         match self.mw.dockWidgetArea(dock):
             case 1:
-                self.left_dock.addPanel(dock)
+                self.left_bar.addPanel(dock)
             case 2:
-                self.right_dock.addPanel(dock)
+                self.right_bar.addPanel(dock)
             case 4:
-                self.upper_dock.addPanel(dock)
+                self.upper_bar.addPanel(dock)
             case 8:
-                self.lower_dock.addPanel(dock)
+                self.lower_bar.addPanel(dock)
             case _:
                 pass
 
@@ -150,40 +141,12 @@ class FlyoutDocksPlugin:
             case _:
                 pass
 
-    def processFloatDock(self, dock, level):
-        if dock in self.left_docks:
-            self.left_docks.remove(dock)
-        elif dock in self.right_docks:
-            self.right_docks.remove(dock)
-        elif dock in self.upper_docks:
-            self.upper_docks.remove(dock)
-        elif dock in self.lower_docks:
-            self.lower_docks.remove(dock)
-        else:
-            pass
-        # TODO: check this
-        if level is True:
-            pass
-        else:
-            self.processDock(dock)
-            match self.mw.dockWidgetArea(dock):
-                case 1:
-                    self.left_dock.addPanel(dock)
-                case 2:
-                    self.right_dock.addPanel(dock)
-                case 4:
-                    self.upper_dock.addPanel(dock)
-                case 8:
-                    self.lower_dock.addPanel(dock)
-                case _:
-                    pass
-
     def setShowHide(self):
         dialog = IgnoreDialog(self.show_docks, self.hide_docks)
         dialog.exec()
         if dialog.success == True:
-            self.show_docks = dialog.show_panels
-            self.hide_docks = dialog.hide_panels
+            self.show_docks = dialog.show_docks
+            self.hide_docks = dialog.hide_docks
             for dock in self.docks:
                 self.processDock(dock)
             self.loadDocks()
@@ -193,7 +156,6 @@ class DockMonitor(QObject):
     
     dockWidgetAdded = pyqtSignal(QDockWidget)
     dockWidgetMoved = pyqtSignal(QDockWidget, Qt.DockWidgetArea)
-    dockWidgetFloatChanged = pyqtSignal(QDockWidget, bool)
     
     def eventFilter(self, o, e):
         if e.type() == QEvent.ChildAdded:
@@ -203,14 +165,9 @@ class DockMonitor(QObject):
                 child.dockLocationChanged.connect(
                     lambda area, dw=child: self.on_location_changed(dw, area)
                 )
-                child.topLevelChanged.connect(
-                    lambda level, dw=child: self.on_level_changed(dw, level)
-                )
-
+                
         return super().eventFilter(o, e)
 
     def on_location_changed(self, widget, area):
         self.dockWidgetMoved.emit(widget, area)
-
-    def on_level_changed(self, widget, level):
-        self.dockWidgetFloatChanged.emit(widget, level)
+    
