@@ -1,5 +1,5 @@
 from qgis.core import QgsApplication, QgsSettings
-from qgis.PyQt.QtWidgets import QDockWidget, QMainWindow, QAction
+from qgis.PyQt.QtWidgets import QToolBar, QDockWidget, QMainWindow, QAction
 from qgis.PyQt.QtCore import Qt, QObject, QEvent, pyqtSignal
 from qgis.PyQt.QtGui import QIcon
 from qgis.utils import iface
@@ -50,19 +50,11 @@ class FlyoutDocksPlugin:
         
     def unload(self):
         self.iface.removePluginMenu('Manage Dock Widgets', self.showHideAction)
+        for bar in self.mw.findChildren(QToolBar):
+            if isinstance(bar, CustomBar):
+                self.mw.removeToolBar(bar)
+                bar.deleteLater()
         del self.showHideAction
-        if self.left_dock:
-            self.iface.removeDockWidget(self.left_dock)
-            del self.left_dock
-        if self.right_dock:
-            self.iface.removeDockWidget(self.right_dock)
-            del self.right_dock
-        if self.upper_dock:
-            self.iface.removeDockWidget(self.upper_dock)
-            del self.upper_dock
-        if self.lower_dock:
-            self.iface.removeDockWidget(self.lower_dock)
-            del self.lower_dock
         if self.mw and self.dock_monitor:
             self.mw.removeEventFilter(self.dock_monitor)
 
@@ -83,17 +75,15 @@ class FlyoutDocksPlugin:
                     pass
 
     def loadDocks(self):
-        if self.dock_bars == []:
-            continue
-        else:
-            for bar in self.dock_bars:
+        for bar in self.mw.findChildren(QToolBar):
+            if isinstance(bar, CustomBar):
                 self.mw.removeToolBar(bar)
-                del bar
+                bar.deleteLater()
         self.left_bar = CustomBar(self.iface, self.left_docks, 'Left Bar')
-        self.mw.addToolbar(Qt.LeftToolBarArea, self.left_bar)
+        self.mw.addToolBar(Qt.LeftToolBarArea, self.left_bar)
         self.dock_bars.append(self.left_bar)
         self.right_bar = CustomBar(self.iface, self.right_docks, 'Right Bar')
-        self.mw.addToolBar(Qt.RightToolBarArea, self.left_bar)
+        self.mw.addToolBar(Qt.RightToolBarArea, self.right_bar)
         self.dock_bars.append(self.right_bar)
         self.upper_bar = CustomBar(self.iface, self.upper_docks, 'Upper Bar')
         self.mw.addToolBar(Qt.TopToolBarArea, self.upper_bar)
@@ -131,13 +121,13 @@ class FlyoutDocksPlugin:
         self.processDock(dock)
         match self.mw.dockWidgetArea(dock):
             case 1:
-                self.left_dock.addPanel(dock)
+                self.left_bar.addPanel(dock)
             case 2:
-                self.right_dock.addPanel(dock)
+                self.right_bar.addPanel(dock)
             case 4:
-                self.upper_dock.addPanel(dock)
+                self.upper_bar.addPanel(dock)
             case 8:
-                self.lower_dock.addPanel(dock)
+                self.lower_bar.addPanel(dock)
             case _:
                 pass
 
@@ -147,8 +137,11 @@ class FlyoutDocksPlugin:
         if dialog.success == True:
             self.show_docks = dialog.show_docks
             self.hide_docks = dialog.hide_docks
+            self.show_docks.clear()
+            self.hide_docks.clear()
             for dock in self.docks:
                 self.processDock(dock)
+                print(dock.windowTitle())
             self.loadDocks()
 
 
