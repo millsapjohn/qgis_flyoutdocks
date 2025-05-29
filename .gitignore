@@ -1,2 +1,4 @@
 __pycache__/
 .mypy_cache/
+hide.pkl
+show.pkl
