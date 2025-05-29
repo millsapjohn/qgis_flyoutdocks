@@ -12,13 +12,13 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.utils import iface
 
 class IgnoreDialog(QDialog):
-    def __init__(self, show_docks, hide_docks):
+    def __init__(self, show_docks_names, hide_docks_names):
         super().__init__()
         self.iface = iface
-        self.show_docks = show_docks
-        self.hide_docks = hide_docks
+        self.show_docks_names = show_docks_names
+        self.hide_docks_names = hide_docks_names
         self.success = False
-        self.docks = self.show_docks + self.hide_docks
+        self.docks_names = self.show_docks_names + self.hide_docks_names
         self.initUI()
 
     def initUI(self):
@@ -35,12 +35,12 @@ class IgnoreDialog(QDialog):
         self.hide_label = QLabel('Hidden Dock Panels')
         self.show_box = QListWidget()
         pos = 0
-        for dock in self.show_docks:
-            self.show_box.addItem(dock.windowTitle())
+        for name in self.show_docks_names:
+            self.show_box.addItem(name)
         self.show_box.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.hide_box = QListWidget()
-        for dock in self.hide_docks:
-            self.hide_box.addItem(dock.windowTitle())
+        for name in self.hide_docks_names:
+            self.hide_box.addItem(name)
         self.hide_box.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.show_layout.addWidget(self.show_label)
         self.show_layout.addWidget(self.show_box)
@@ -85,12 +85,7 @@ class IgnoreDialog(QDialog):
             pass
 
     def submitValues(self):
-        self.hide = [self.hide_box.item(row).text() for row in range(self.hide_box.count())]
-        self.show = [self.show_box.item(row).text() for row in range(self.show_box.count())]
-        for dock in self.docks:
-            if dock.windowTitle() in self.hide:
-                self.hide_docks.append(dock)
-            else:
-                self.show_docks.append(dock)
+        self.hide_docks_names = [self.hide_box.item(row).text() for row in range(self.hide_box.count())]
+        self.show_docks_names = [self.show_box.item(row).text() for row in range(self.show_box.count())]
         self.success = True
         self.close()
