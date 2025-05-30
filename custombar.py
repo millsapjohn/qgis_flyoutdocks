@@ -5,14 +5,10 @@ from qgis.PyQt.QtWidgets import (
     QWidget,
     QSizePolicy,
     QDockWidget,
-)
-from qgis.PyQt.QtGui import (
-    QIcon,
+    QWidgetAction,
 )
 from qgis.PyQt.QtCore import Qt
-
-
-button_icon = QIcon(':/themes/default/console/iconHideToolConsole.svg')
+from .custombutton import RotatedButton
 
 
 class CustomBar(QToolBar):
@@ -41,19 +37,29 @@ class CustomBar(QToolBar):
             panel.setVisible(True)
 
     def addPanel(self, panel):
-        for action in self.actions():
-            if action.text() == panel.windowTitle():
+        for button in self.findChildren((RotatedButton, QToolButton)):
+            if button.text() == panel.windowTitle():
                 return
         try:
-            action = QAction(button_icon, panel.windowTitle(), self)
-            action.triggered.connect(lambda: self.panelState(panel))
-            self.addAction(action)
+            action = QAction(panel.windowTitle(), self)
+            action.setToolTip(panel.windowTitle())
+            button = QToolButton(self)
+            button.setText(panel.windowTitle())
+            button.setToolButtonStyle(Qt.ToolButtonTextOnly)
+            button.setDefaultAction(action)
+            button.clicked.connect(lambda: self.panelState(panel))
+            self.addWidget(button)
         except Exception as e:
             print(e)
 
     def removePanel(self, panel):
+        remove_action = None
         for action in self.actions():
-            if action.text() == panel.windowTitle():
-                self.removeAction(action)
-                action.deleteLater()
-                break
+            if isinstance(action, QWidgetAction):
+                widget = action.defaultWidget()
+                if isinstance(widget, (RotatedButton, QToolButton)) and widget.text() == panel.windowTitle():
+                    remove_action = action
+                    break
+        if remove_action:
+            self.removeAction(remove_action)
+            remove_action.deleteLater()

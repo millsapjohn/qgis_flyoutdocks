@@ -26,11 +26,7 @@ class FlyoutDocksPlugin:
                 self.hide_docks_names = pickle.load(f)
         else:
             self.hide_docks_names = []
-        if path.exists(self.show_path):
-            with open(self.show_path, 'rb') as f:
-                self.show_docks_names = pickle.load(f)
-        else:
-            self.show_docks_names = []
+        self.show_docks_names = []
         self.dock_bars = []
         self.hide_docks = []
         self.show_docks = []
@@ -63,6 +59,12 @@ class FlyoutDocksPlugin:
 
     def initialLoadDocks(self):
         self.docks = self.mw.findChildren(QDockWidget)
+        for dock in self.docks:
+            if dock.windowTitle() in self.hide_docks_names:
+                continue
+            else:
+                if dock.windowTitle() not in self.show_docks_names:
+                    self.show_docks_names.append(dock.windowTitle())
         self.hide_docks.clear()
         self.show_docks.clear()
         for dock in list(self.docks):
