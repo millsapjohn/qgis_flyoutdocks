@@ -20,7 +20,6 @@ class FlyoutDocksPlugin:
         profilepath = path.dirname(self.instance.qgisUserDatabaseFilePath())
         pluginpath = path.join(profilepath, 'python/plugins/FlyoutDocks')
         self.hide_path = path.join(pluginpath, 'hide.pkl')
-        self.show_path = path.join(pluginpath, 'show.pkl')
         if path.exists(self.hide_path):
             with open(self.hide_path, 'rb') as f:
                 self.hide_docks_names = pickle.load(f)
@@ -40,7 +39,7 @@ class FlyoutDocksPlugin:
         self.upper_bar = None
         self.lower_bar = None
         self.mw = self.iface.mainWindow()
-        self.initGui()
+        QTimer.singleShot(20000, self.initGui)
 
     def initGui(self):
         current_opt = self.mw.dockOptions()
@@ -54,7 +53,6 @@ class FlyoutDocksPlugin:
         self.mw.installEventFilter(self.dock_monitor)
         self.dock_monitor.dockWidgetAdded.connect(self.processNewDock)
         self.dock_monitor.dockWidgetMoved.connect(self.processMoveDock)
-        QTimer.singleShot(1000, self.initialLoadDocks)
         self.initialLoadDocks()
 
     def initialLoadDocks(self):
@@ -182,8 +180,6 @@ class FlyoutDocksPlugin:
             if dock not in self.show_docks:
                 self.show_docks.append(dock)
         self._updateDockPlacement(dock)
-        with open(self.show_path, 'wb') as f:
-            pickle.dump([d.windowTitle() for d in self.show_docks], f)
         with open(self.hide_path, 'wb') as f:
             pickle.dump([d.windowTitle() for d in self.hide_docks], f)
 
@@ -247,8 +243,6 @@ class FlyoutDocksPlugin:
             self.hide_docks_names = dialog.hide_docks_names
             with open(self.hide_path, 'wb') as f:
                 pickle.dump(self.hide_docks_names, f)
-            with open(self.show_path, 'wb') as f:
-                pickle.dump(self.show_docks_names, f)
             self.show_docks.clear()
             self.hide_docks.clear()
             for dock in self.docks:

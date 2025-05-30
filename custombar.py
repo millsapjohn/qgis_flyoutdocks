@@ -43,8 +43,11 @@ class CustomBar(QToolBar):
         try:
             action = QAction(panel.windowTitle(), self)
             action.setToolTip(panel.windowTitle())
-            button = QToolButton(self)
-            button.setText(panel.windowTitle())
+            if self.windowTitle() in ['Left Bar', 'Right Bar']:
+                button = RotatedButton(panel.windowTitle(), self)
+            else:
+                button = QToolButton(self)
+                button.setText(panel.windowTitle())
             button.setToolButtonStyle(Qt.ToolButtonTextOnly)
             button.setDefaultAction(action)
             button.clicked.connect(lambda: self.panelState(panel))
