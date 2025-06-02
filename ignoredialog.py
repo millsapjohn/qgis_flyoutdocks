@@ -36,11 +36,11 @@ class IgnoreDialog(QDialog):
         self.show_box = QListWidget()
         for name in self.show_docks_names:
             self.show_box.addItem(name)
-        self.show_box.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.show_box.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.hide_box = QListWidget()
         for name in self.hide_docks_names:
             self.hide_box.addItem(name)
-        self.hide_box.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.hide_box.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.show_layout.addWidget(self.show_label)
         self.show_layout.addWidget(self.show_box)
         self.hide_layout.addWidget(self.hide_label)
