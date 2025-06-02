@@ -1,6 +1,5 @@
 from qgis.PyQt.QtWidgets import (
     QToolBar,
-    QAction,
     QToolButton,
     QWidget,
     QSizePolicy,
@@ -9,6 +8,11 @@ from qgis.PyQt.QtWidgets import (
 )
 from qgis.PyQt.QtCore import Qt
 from .custombutton import RotatedButton
+
+try:
+    from qgis.PyQt.QtWidgets import QAction
+except ImportError:
+    from qgis.PyQt.QtGui import QAction
 
 
 class CustomBar(QToolBar):
@@ -19,14 +23,14 @@ class CustomBar(QToolBar):
         self.mw = iface.mainWindow()
         self.tb_orientation = self.orientation()
         self.left_spacer = QWidget(self)
-        self.left_spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.left_spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         self.addWidget(self.left_spacer)
         for panel in panels:
             self.addPanel(panel)
         self.right_spacer = QWidget(self)
-        self.right_spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.right_spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         self.addWidget(self.right_spacer)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
     def panelState(self, panel):
         if panel.isVisible():
@@ -48,7 +52,7 @@ class CustomBar(QToolBar):
             else:
                 button = QToolButton(self)
                 button.setText(panel.windowTitle())
-            button.setToolButtonStyle(Qt.ToolButtonTextOnly)
+            button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextOnly)
             button.setDefaultAction(action)
             button.clicked.connect(lambda: self.panelState(panel))
             self.addWidget(button)

@@ -5,10 +5,12 @@ email=jmillsapengineer@gmail.com
 author=John Millsap
 description=Enables all dock widgets to be shown or hidden with the click of a button
 about=Displays a named button for each dock widget, allowing the user to show or hide each in turn
-version=1.0
+version=1.1
 repository=https://github.com/millsapjohn/qgis_flyoutdocks
+supportsQt6=True
 
-changelog=changelog
+changelog=
+	Version 1.1 2025-06-02 - ported to Qt6
 experimental=False
 deprecated=False
 tags=UI,interface,customization

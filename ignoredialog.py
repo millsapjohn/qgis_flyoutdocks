@@ -4,12 +4,12 @@ from qgis.PyQt.QtWidgets import (
     QHBoxLayout,
     QPushButton,
     QLabel,
-    QCheckBox,
     QListWidget,
     QAbstractItemView,
 )
 from qgis.PyQt.QtGui import QIcon
 from qgis.utils import iface
+
 
 class IgnoreDialog(QDialog):
     def __init__(self, show_docks_names, hide_docks_names):
@@ -34,7 +34,6 @@ class IgnoreDialog(QDialog):
         self.show_label = QLabel('Visible Dock Panels')
         self.hide_label = QLabel('Hidden Dock Panels')
         self.show_box = QListWidget()
-        pos = 0
         for name in self.show_docks_names:
             self.show_box.addItem(name)
         self.show_box.setEditTriggers(QAbstractItemView.NoEditTriggers)
