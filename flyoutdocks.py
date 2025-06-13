@@ -1,6 +1,6 @@
 from qgis.core import QgsApplication, QgsSettings, QgsProject
 from qgis.PyQt.QtWidgets import QToolBar, QDockWidget, QMainWindow
-from qgis.PyQt.QtCore import Qt, QObject, QEvent, pyqtSignal, QTimer
+from qgis.PyQt.QtCore import Qt, QObject, QEvent, pyqtSignal
 from qgis.PyQt.QtGui import QIcon
 from .custombar import CustomBar
 from .ignoredialog import IgnoreDialog
@@ -45,7 +45,7 @@ class FlyoutDocksPlugin:
         self.upper_bar = None
         self.lower_bar = None
         self.mw = self.iface.mainWindow()
-        QTimer.singleShot(20000, self.initGui) # TODO: Qt6 migration
+        self.iface.initializationCompleted.connect(self.initGui)
 
     def initGui(self):
         current_opt = self.mw.dockOptions()
