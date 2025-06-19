@@ -36,8 +36,10 @@ class CustomBar(QToolBar):
         if panel.isVisible():
             panel.setVisible(False)
         else:
+            current_area = self.mw.dockWidgetArea(panel)
             for dock in self.mw.findChildren(QDockWidget):
-                dock.setVisible(False)
+                if self.mw.dockWidgetArea(dock) == current_area and dock.windowTitle() != panel.windowTitle():
+                    dock.setVisible(False)
             panel.setVisible(True)
 
     def addPanel(self, panel):
