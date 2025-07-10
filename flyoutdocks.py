@@ -31,6 +31,8 @@ class FlyoutDocksPlugin:
                 self.hide_docks_names = pickle.load(f)
         else:
             self.hide_docks_names = []
+        if 'Tile Scale' not in self.hide_docks_names:
+            self.hide_docks_names.append('Tile Scale')
         self.show_docks_names = []
         self.dock_bars = []
         self.hide_docks = []
