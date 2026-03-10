@@ -12,12 +12,13 @@ supportsQt6=True
 changelog=
 	Version 1.1 2025-06-02 - ported to Qt6
 	Version 1.2 2025-06-19 - allowed hiding on a per-area basis
+	Version 1.2.1 2026-03-10 - updated metadata for QGIS 4.0
 experimental=False
 deprecated=False
 tags=UI,interface,customization
 homepage=https://github.com/millsapjohn/qgis_flyoutdocks
 tracker=https://github.com/millsapjohn/qgis_flyoutdocks/issues
-qgisMaximumVersion=3.99
+qgisMaximumVersion=4.99
 icon=':/images/themes/default/console/iconHideToolConsole.svg'
 server=False
 hasProcessingProvider=False
